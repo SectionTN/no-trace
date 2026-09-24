@@ -19,12 +19,14 @@ lands in the commit, you point it out, and you get "You're absolutely right!" pl
 to amend. A hook does not forget. It runs on every command whether or not the rule survived,
 and it fixes the ones that got through.
 
+## Why not just the setting
+
 Claude Code's `attribution` setting can blank its own commit trailer and pull request
-footer, and that part is reliable. no-trace is for the rest: trailers from Copilot, Cursor,
-Codex, Jules or Devin when more than one assistant touches a repo, the emoji, em dashes and
-curly quotes that mark generated prose, message files and GitHub MCP calls the setting never
-sees, and a repair step for whatever still lands in a commit or a pull request. It also
-holds on a new machine or project where neither the rule nor the setting made it over.
+footer. If that is all you want, set it and stop here. no-trace is for the rest: trailers
+from Copilot, Cursor, Codex, Jules or Devin when more than one assistant touches a repo,
+the emoji, em dashes and curly quotes that mark generated prose, message files and GitHub
+MCP calls the setting never sees, and a repair step for whatever still lands in a commit or
+a pull request. It also holds on a new machine or project where the setting is missing.
 
 ## How it works
 
