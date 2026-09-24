@@ -1,0 +1,83 @@
+{
+	"description": "no-trace: keeps AI attribution and AI punctuation tells out of git, gh and GitHub MCP output; amends unpushed commits and edits GitHub objects that slipped through.",
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/session-start.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading no-trace rules"
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"if": "Bash(git *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/pre-tool-use.js\" git",
+						"timeout": 10
+					},
+					{
+						"type": "command",
+						"if": "Bash(gh *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/pre-tool-use.js\" gh",
+						"timeout": 10
+					},
+					{
+						"type": "command",
+						"if": "Bash(glab *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/pre-tool-use.js\" glab",
+						"timeout": 10
+					},
+					{
+						"type": "command",
+						"if": "Bash(rtk *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/pre-tool-use.js\" rtk",
+						"timeout": 10
+					}
+				]
+			},
+			{
+				"matcher": "mcp__.*(git|issue|pull_request|commit).*",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/pre-tool-use.js\" mcp",
+						"timeout": 10
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"if": "Bash(git *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/post-tool-use.js\" git",
+						"timeout": 30
+					},
+					{
+						"type": "command",
+						"if": "Bash(gh *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/post-tool-use.js\" gh",
+						"timeout": 30
+					},
+					{
+						"type": "command",
+						"if": "Bash(rtk *)",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/src/post-tool-use.js\" rtk",
+						"timeout": 30
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+	"name": "no-trace",
+	"version": "0.1.0",
+	"description": "Keeps AI attribution and AI writing tells out of commits, PRs, issues and comments made through Claude Code.",
+	"author": {
+		"name": "Rayen Sbai",
+		"url": "https://github.com/SectionTN"
+	},
+	"homepage": "https://github.com/SectionTN/no-trace",
+	"repository": "https://github.com/SectionTN/no-trace",
+	"license": "MIT",
+	"keywords": ["git", "github", "commits", "attribution", "hooks"]
+}

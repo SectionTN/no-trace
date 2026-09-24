@@ -1,0 +1,19 @@
+{
+	"name": "no-trace",
+	"version": "0.1.0",
+	"private": true,
+	"author": {
+		"name": "Rayen Sbai",
+		"email": "rayensbai2@gmail.com"
+	},
+	"description": "Claude Code plugin that keeps AI attribution and AI writing tells out of commits, PRs, issues and comments.",
+	"license": "MIT",
+	"scripts": {
+		"test": "node --test",
+		"lint": "biome check .",
+		"format": "biome format --write ."
+	},
+	"engines": {
+		"node": ">=18"
+	}
+}

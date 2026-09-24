@@ -1,0 +1,17 @@
+{
+	"$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+	"name": "no-trace",
+	"description": "Claude Code plugin that keeps AI attribution and AI writing tells out of commits, PRs, issues and comments.",
+	"owner": {
+		"name": "Rayen Sbai",
+		"url": "https://github.com/SectionTN"
+	},
+	"plugins": [
+		{
+			"name": "no-trace",
+			"source": "./",
+			"description": "Keeps AI attribution and AI writing tells out of commits, PRs, issues and comments made through Claude Code.",
+			"category": "productivity"
+		}
+	]
+}
