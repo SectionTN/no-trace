@@ -1,17 +1,22 @@
-const AI =
-	"(?:claude|anthropic|copilot|chatgpt|openai|codex|gemini|cursor|aider|devin|windsurf|cline|kiro|jules|amazon\\s?q|codewhisperer|opencode|noreply@anthropic\\.com)";
-const AI_VALUE_KEYS =
-	"(?:co-?authored-by|signed-off-by|reviewed-by|helped-by|paired-with|pair-programmed-with|authored-by|co-?developed-by|tested-by|suggested-by|acked-by|generated-by|generated-with|made-with|assisted-by|created-by|written-by|drafted-by)";
-const AI_KEYS = "(?:claude[a-z0-9-]*|ai-[a-z-]+|x-ai[a-z-]*)";
+// Names that only ever belong to tools. A bare "Claude", "Devin" or "Jules" can be a person.
+const AI_NAMES =
+	"anthropic|claude\\s+code|claude\\s+(?:opus|sonnet|haiku|fable|mythos|\\d)|copilot|chatgpt|openai|codex|gemini|cursor|aider|devin-ai|devin\\[bot\\]|google-labs-jules|jules\\[bot\\]|windsurf|cline|kiro-agent|opencode|codewhisperer|amazon\\s?q";
+const AI_STRICT = `(?<![a-z0-9])(?:${AI_NAMES})(?![a-z0-9])`;
+const AI_LOOSE = `(?<![a-z0-9])(?:claude|${AI_NAMES})(?![a-z0-9])`;
+const PERSON_KEYS =
+	"(?:co-?authored-by|signed-off-by|reviewed-by|helped-by|paired-with|pair-programmed-with|authored-by|co-?developed-by|tested-by|suggested-by|acked-by|created-by|written-by|drafted-by)";
+const TOOL_KEYS = "(?:generated-by|generated-with|made-with|assisted-by)";
+const AI_KEYS = "(?:claude-[a-z0-9-]+|ai-[a-z-]+|x-ai[a-z-]*)";
 const VERBS =
 	"(?:generated|created|made|built|written|drafted|authored|assisted|powered|produced|co-?authored|co-?written)";
 const LEAD = "^[\\p{Extended_Pictographic}\\uFE0F\\s]*(?:<!--\\s*)?";
 
 const ATTRIBUTION = [
-	new RegExp(`${LEAD}${AI_VALUE_KEYS}\\s*:.*${AI}`, "iu"),
+	new RegExp(`${LEAD}${PERSON_KEYS}\\s*:.*${AI_STRICT}`, "iu"),
+	new RegExp(`${LEAD}${TOOL_KEYS}\\s*:.*${AI_LOOSE}`, "iu"),
 	new RegExp(`${LEAD}${AI_KEYS}\\s*:\\s*\\S`, "iu"),
 	new RegExp(
-		`${LEAD}(?:this\\s+\\w+\\s+(?:was|is)\\s+)?${VERBS}\\s+(?:with|by|using|via)\\b.*${AI}`,
+		`${LEAD}(?:this\\s+\\w+\\s+(?:was|is)\\s+)?${VERBS}\\s+(?:with|by|using|via)\\b.*${AI_LOOSE}`,
 		"iu",
 	),
 ];
@@ -144,6 +149,26 @@ function processLines(lines, style, shell) {
 	return out;
 }
 
+// Replaces heredoc body characters with spaces so command parsers skip them without shifting offsets.
+function maskHeredocBodies(command) {
+	const pending = [];
+	let term = null;
+	return command
+		.split("\n")
+		.map((line) => {
+			if (term !== null) {
+				if (!isTerminator(line, term)) return " ".repeat(line.length);
+				term = pending.length ? pending.shift() : null;
+				return line;
+			}
+			for (const m of line.matchAll(HEREDOC))
+				pending.push(m[1] || m[2] || m[3]);
+			if (pending.length) term = pending.shift();
+			return line;
+		})
+		.join("\n");
+}
+
 function scrubCommand(cmd, opts = {}) {
 	if (typeof cmd !== "string" || !isGitCommand(cmd)) return cmd;
 	const cleaned = cmd.replace(MSG_ARG, (m, _q, val) =>
@@ -192,4 +217,5 @@ module.exports = {
 	hasAttribution,
 	isAttributionLine,
 	isGitCommand,
+	maskHeredocBodies,
 };

@@ -1,16 +1,18 @@
 const { execFileSync } = require("node:child_process");
 const { debug } = require("./hook");
 const { gitDir } = require("./message-files");
-const { scrubMessage } = require("./scrub");
+const { maskHeredocBodies, scrubMessage } = require("./scrub");
 
-const COMMIT_CMD = /(^|[\s;&|(`/])git\s+(?:-\S+\s+)*commit(?=\s|$)/;
+const COMMIT_CMD =
+	/(^|[\s;&|(`/])git\s+(?:-[cC]\s+\S+\s+|-\S+\s+)*commit(?=\s|$)/;
 const FRESH_SECONDS = 120;
 
 // Amends the commit the command just made if its message still carries attribution. Returns report lines.
 function fixCommit(command, cwd, opts) {
-	const match = COMMIT_CMD.exec(command);
+	const masked = maskHeredocBodies(command);
+	const match = COMMIT_CMD.exec(masked);
 	if (!match) return [];
-	const dir = gitDir(command, cwd, match.index + match[1].length);
+	const dir = gitDir(masked, cwd, match.index + match[1].length);
 	if (!dir) return [];
 	const git = (args, extra = {}) =>
 		execFileSync("git", args, {

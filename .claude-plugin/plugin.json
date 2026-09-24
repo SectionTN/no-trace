@@ -1,7 +1,7 @@
 {
 	"$schema": "https://anthropic.com/claude-code/plugin.schema.json",
 	"name": "no-trace",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Keeps AI attribution and AI writing tells out of commits, PRs, issues and comments made through Claude Code.",
 	"author": {
 		"name": "Rayen Sbai",

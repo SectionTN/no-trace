@@ -81,6 +81,7 @@ function fakeGh(fixtures) {
 		"const fixtures = JSON.parse(process.env.FAKE_GH_FIXTURES);",
 		'const method = args.includes("-X") ? args[args.indexOf("-X") + 1] : "GET";',
 		'const target = args.find((a) => a.startsWith("repos/"));',
+		'if (method !== "GET" && process.env.FAKE_GH_FAIL_PATCH) { process.stderr.write("HTTP 422\\n"); process.exit(1); }',
 		'if (method !== "GET") { process.stdout.write("{}"); process.exit(0); }',
 		'if (!(target in fixtures)) { process.stderr.write("HTTP 404\\n"); process.exit(1); }',
 		"process.stdout.write(JSON.stringify(fixtures[target]));",

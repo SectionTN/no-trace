@@ -1,6 +1,6 @@
 const { execFileSync } = require("node:child_process");
 const { debug } = require("./hook");
-const { scrubMessage } = require("./scrub");
+const { maskHeredocBodies, scrubMessage } = require("./scrub");
 
 const GH_CMD = /\bgh\s+(?:pr|issue|release)\s+(?:create|edit|comment|review)\b/;
 const OBJECT_URL =
@@ -73,7 +73,7 @@ function gh(args, host, input) {
 
 // Re-reads objects the gh command just created or edited and patches attribution away. Returns report lines.
 function fixGithubObjects(command, toolResponse, opts) {
-	if (!GH_CMD.test(command)) return [];
+	if (!GH_CMD.test(maskHeredocBodies(command))) return [];
 	const reports = [];
 	for (const target of targets(collectStrings(toolResponse).join("\n"))) {
 		let current;
