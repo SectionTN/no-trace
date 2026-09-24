@@ -6,17 +6,24 @@ const AI_LOOSE = `(?<![a-z0-9])(?:claude|${AI_NAMES})(?![a-z0-9])`;
 const PERSON_KEYS =
 	"(?:co-?authored-by|signed-off-by|reviewed-by|helped-by|paired-with|pair-programmed-with|authored-by|co-?developed-by|tested-by|suggested-by|acked-by|created-by|written-by|drafted-by)";
 const TOOL_KEYS = "(?:generated-by|generated-with|made-with|assisted-by)";
-const AI_KEYS = "(?:claude-[a-z0-9-]+|ai-[a-z-]+|x-ai[a-z-]*)";
+// Trailer keys tools invent for themselves. Kept narrow so a component prefix like "ai-gateway:" survives.
+const AI_KEYS =
+	"(?:claude-(?:code-)?session[a-z0-9-]*|ai-(?:assisted|generated|generation|tool|agent|model|disclosure|attribution)[a-z-]*|x-ai-[a-z-]*)";
+// Attribution verbs only. "Built with" and "Powered by" describe features, not authorship.
 const VERBS =
-	"(?:generated|created|made|built|written|drafted|authored|assisted|powered|produced|co-?authored|co-?written)";
+	"(?:generated|created|written|drafted|authored|assisted|co-?authored|co-?written)";
 const LEAD = "^[\\p{Extended_Pictographic}\\uFE0F\\s]*(?:<!--\\s*)?";
 
 const ATTRIBUTION = [
-	new RegExp(`${LEAD}${PERSON_KEYS}\\s*:.*${AI_STRICT}`, "iu"),
+	// A tool name in the display name, or Anthropic's noreply address. People at AI companies keep their trailers.
+	new RegExp(
+		`${LEAD}${PERSON_KEYS}\\s*:\\s*(?:[^<\\n]*${AI_STRICT}|[^\\n]*<[^>\\n]*noreply@anthropic\\.com>)`,
+		"iu",
+	),
 	new RegExp(`${LEAD}${TOOL_KEYS}\\s*:.*${AI_LOOSE}`, "iu"),
 	new RegExp(`${LEAD}${AI_KEYS}\\s*:\\s*\\S`, "iu"),
 	new RegExp(
-		`${LEAD}(?:this\\s+\\w+\\s+(?:was|is)\\s+)?${VERBS}\\s+(?:with|by|using|via)\\b.*${AI_LOOSE}`,
+		`${LEAD}(?:this\\s+\\w+\\s+(?:was|is)\\s+)?${VERBS}\\s+(?:with|by|using|via)\\b[^\\n]{0,60}?${AI_LOOSE}`,
 		"iu",
 	),
 ];
@@ -170,7 +177,8 @@ function maskHeredocBodies(command) {
 }
 
 function scrubCommand(cmd, opts = {}) {
-	if (typeof cmd !== "string" || !isGitCommand(cmd)) return cmd;
+	if (typeof cmd !== "string" || !isGitCommand(maskHeredocBodies(cmd)))
+		return cmd;
 	const cleaned = cmd.replace(MSG_ARG, (m, _q, val) =>
 		isAttributionLine(val) ? "" : m,
 	);

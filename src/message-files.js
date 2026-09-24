@@ -49,6 +49,7 @@ function scrubMessageFiles(command, cwd, opts) {
 		}
 		if (!stat.isFile() || stat.size > MAX_BYTES) continue;
 		const text = fs.readFileSync(full, "utf8");
+		if (text.includes("\u{FFFD}")) continue;
 		const next = scrubMessage(text, opts);
 		if (next === text) continue;
 		fs.writeFileSync(full, next);

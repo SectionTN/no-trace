@@ -2,7 +2,7 @@
 
 const { emit, options, readInput } = require("./hook");
 const { scrubMessageFiles } = require("./message-files");
-const { isGitCommand, scrubToolInput } = require("./scrub");
+const { isGitCommand, maskHeredocBodies, scrubToolInput } = require("./scrub");
 
 const input = readInput();
 if (input) {
@@ -12,7 +12,7 @@ if (input) {
 	if (result.changed) fields.updatedInput = result.input;
 	const command =
 		input.tool_name === "Bash" ? String(input.tool_input?.command || "") : "";
-	if (isGitCommand(command)) {
+	if (isGitCommand(maskHeredocBodies(command))) {
 		const files = scrubMessageFiles(command, input.cwd || process.cwd(), opts);
 		if (files.length) {
 			fields.additionalContext = `no-trace: removed AI attribution or non-ASCII punctuation from ${files.join(", ")} before use.`;

@@ -19,8 +19,16 @@ const GIT_ENV = {
 
 const heredocCommit = (body) =>
 	`git commit -m "$(cat <<'EOF'\n${body}\nEOF\n)"`;
-const tempDir = (prefix = "no-trace-") =>
-	fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const created = [];
+process.on("exit", () => {
+	for (const dir of created) fs.rmSync(dir, { recursive: true, force: true });
+});
+
+function tempDir(prefix = "no-trace-") {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+	created.push(dir);
+	return dir;
+}
 
 function runHookRaw(script, payload, env = {}) {
 	const result = spawnSync(process.execPath, [path.join(SRC, script)], {
