@@ -11,7 +11,19 @@
 			"name": "no-trace",
 			"source": "./",
 			"description": "Keeps AI attribution and AI writing tells out of commits, PRs, issues and comments made through Claude Code.",
-			"category": "productivity"
+			"category": "productivity",
+			"homepage": "https://github.com/SectionTN/no-trace",
+			"keywords": [
+				"claude-code",
+				"claude-code-plugin",
+				"hooks",
+				"git",
+				"github",
+				"commits",
+				"pull-requests",
+				"co-authored-by",
+				"attribution"
+			]
 		}
 	]
 }

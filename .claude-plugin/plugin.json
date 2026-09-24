@@ -10,5 +10,15 @@
 	"homepage": "https://github.com/SectionTN/no-trace",
 	"repository": "https://github.com/SectionTN/no-trace",
 	"license": "MIT",
-	"keywords": ["git", "github", "commits", "attribution", "hooks"]
+	"keywords": [
+		"claude-code",
+		"claude-code-plugin",
+		"hooks",
+		"git",
+		"github",
+		"commits",
+		"pull-requests",
+		"co-authored-by",
+		"attribution"
+	]
 }

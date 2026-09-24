@@ -1,11 +1,24 @@
 # no-trace
 
+[![release](https://img.shields.io/github/v/release/SectionTN/no-trace?display_name=release&label=release)](https://github.com/SectionTN/no-trace/releases)
+[![ci](https://github.com/SectionTN/no-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/SectionTN/no-trace/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/SectionTN/no-trace)](LICENSE)
+
 Claude Code plugin that keeps AI fingerprints out of your git history and GitHub activity.
 
 Claude Code appends `Co-Authored-By: Claude <noreply@anthropic.com>` to commits and a
 "Generated with Claude Code" footer to pull requests. This plugin removes both, along with
 the punctuation habits that give generated text away, from every `git`, `gh` and `glab`
 command and every GitHub MCP call the assistant makes.
+
+## Why not just the setting
+
+Claude Code's `attribution` setting can blank its own commit trailer and pull request
+footer. If that is all you want, set it and stop here. no-trace is for the rest: trailers
+from Copilot, Cursor, Codex, Jules or Devin when more than one assistant touches a repo,
+the emoji, em dashes and curly quotes that mark generated prose, message files and GitHub
+MCP calls the setting never sees, and a repair step for whatever still lands in a commit or
+a pull request. It also holds on a new machine or project where the setting is missing.
 
 ## How it works
 
