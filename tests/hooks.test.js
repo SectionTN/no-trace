@@ -10,6 +10,8 @@ const {
 	tempDir,
 	bashCall,
 	fakeGh,
+	git,
+	tempRepo,
 } = require("./helpers");
 
 const bashPre = (cwd, command) => ({
@@ -199,4 +201,55 @@ test("NO_TRACE_DEBUG=1 logs to stderr and never to stdout", () => {
 	});
 	assert.equal(stdout.trim(), "");
 	assert.match(stderr, /no-trace: /);
+});
+
+test("pre-tool-use follows cd steps before git and ignores cd after it", () => {
+	const dir = tempDir();
+	fs.mkdirSync(path.join(dir, "repo"));
+	fs.writeFileSync(
+		path.join(dir, "repo", "msg.txt"),
+		`feat: z\n\n${TRAILER}\n`,
+	);
+	fs.writeFileSync(path.join(dir, "msg.txt"), "feat: root ✨\n");
+	runHook(
+		"pre-tool-use.js",
+		bashPre(
+			tempDir(),
+			`cd "${dir}" && cd repo && git commit -F msg.txt && cd ..`,
+		),
+	);
+	assert.equal(
+		fs.readFileSync(path.join(dir, "repo", "msg.txt"), "utf8"),
+		"feat: z\n",
+	);
+	assert.equal(
+		fs.readFileSync(path.join(dir, "msg.txt"), "utf8"),
+		"feat: root ✨\n",
+	);
+});
+
+test("pre-tool-use leaves files alone when a cd target cannot be resolved", () => {
+	const dir = tempDir();
+	fs.writeFileSync(path.join(dir, "msg.txt"), `feat: q\n\n${TRAILER}\n`);
+	assert.equal(
+		runHook(
+			"pre-tool-use.js",
+			bashPre(dir, 'cd "$REPO" && git commit -F msg.txt'),
+		),
+		null,
+	);
+	assert.match(
+		fs.readFileSync(path.join(dir, "msg.txt"), "utf8"),
+		/Co-Authored-By/,
+	);
+});
+
+test("post-tool-use follows cd before git commit", () => {
+	const repo = tempRepo();
+	const out = runHook(
+		"post-tool-use.js",
+		bashCall(tempDir(), `cd ${repo} && git commit -m x`),
+	);
+	assert.equal(git(repo, ["log", "-1", "--format=%B"]), "feat: x");
+	assert.match(out.hookSpecificOutput.additionalContext, /amended/);
 });

@@ -1,27 +1,42 @@
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { debug } = require("./hook");
 const { scrubMessage } = require("./scrub");
 
 const FILE_ARG =
 	/\b(?:git|gh|glab)\s+[^;&|\n]*?(?:-F|--file|--body-file|--notes-file)(?:=|\s+)(?:"([^"]+)"|'([^']+)'|(\S+))/g;
-const GIT_DIR = /\bgit\s+(?:-\S+\s+)*?-C\s+(?:"([^"]+)"|'([^']+)'|(\S+))/;
+const CD_STEP =
+	/(?:^|&&|\|\||;|\n)\s*cd(?:\s+(?:"([^"]*)"|'([^']*)'|([^\s;&|]+)))?(?=[\s;&|]|$)/g;
+const GIT_C = /^git\s+(?:-\S+\s+)*?-C\s+(?:"([^"]+)"|'([^']+)'|(\S+))/;
 const MAX_BYTES = 256 * 1024;
 
-// Directory git commands run in: honours `git -C <dir>`, otherwise the hook cwd.
-function gitDir(command, cwd) {
-	const m = GIT_DIR.exec(command);
-	const dir = m && (m[1] || m[2] || m[3]);
-	return dir ? path.resolve(cwd, dir) : cwd;
+// A bare cd goes home; "-" and anything with shell expansion cannot be resolved without a shell.
+function resolveArg(raw, from) {
+	if (raw === undefined) return os.homedir();
+	if (raw === "-" || /[$`]/.test(raw)) return null;
+	return path.resolve(from, raw.replace(/^~(?=$|\/)/, os.homedir()));
+}
+
+// Directory the git invocation starting at `at` runs in: earlier cd steps plus its own -C. Null when unresolvable.
+function gitDir(command, cwd, at = 0) {
+	let dir = cwd;
+	for (const m of command.matchAll(CD_STEP)) {
+		if (m.index >= at) break;
+		dir = resolveArg(m[1] ?? m[2] ?? m[3], dir);
+		if (dir === null) return null;
+	}
+	const c = GIT_C.exec(command.slice(at));
+	return c ? resolveArg(c[1] || c[2] || c[3], dir) : dir;
 }
 
 // Scrubs message files named by -F/--file/--body-file/--notes-file in place. Returns the paths changed.
 function scrubMessageFiles(command, cwd, opts) {
 	const changed = [];
-	const base = gitDir(command, cwd);
 	for (const m of command.matchAll(FILE_ARG)) {
 		const file = m[1] || m[2] || m[3];
-		if (file === "-" || file.startsWith("/dev/")) continue;
+		const base = gitDir(command, cwd, m.index);
+		if (!base || file === "-" || file.startsWith("/dev/")) continue;
 		const full = path.resolve(base, file);
 		let stat;
 		try {

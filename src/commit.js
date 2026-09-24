@@ -8,10 +8,13 @@ const FRESH_SECONDS = 120;
 
 // Amends the commit the command just made if its message still carries attribution. Returns report lines.
 function fixCommit(command, cwd, opts) {
-	if (!COMMIT_CMD.test(command)) return [];
+	const match = COMMIT_CMD.exec(command);
+	if (!match) return [];
+	const dir = gitDir(command, cwd, match.index + match[1].length);
+	if (!dir) return [];
 	const git = (args, extra = {}) =>
 		execFileSync("git", args, {
-			cwd: gitDir(command, cwd),
+			cwd: dir,
 			encoding: "utf8",
 			stdio: ["pipe", "pipe", "ignore"],
 			...extra,
@@ -23,7 +26,7 @@ function fixCommit(command, cwd, opts) {
 		committedAt = Number(git(["log", "-1", "--format=%ct"]));
 		message = git(["log", "-1", "--format=%B"]);
 	} catch (error) {
-		debug(`no HEAD to inspect: ${error.message}`);
+		debug(`no HEAD to inspect in ${dir}: ${error.message}`);
 		return [];
 	}
 	if (Date.now() / 1000 - committedAt > FRESH_SECONDS) return [];

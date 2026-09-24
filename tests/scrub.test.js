@@ -96,6 +96,14 @@ test("leaves clean git commands untouched", () => {
 	assert.equal(scrubCommand(cmd), cmd);
 });
 
+test("style scrub outside heredocs only touches lines that invoke git or gh", () => {
+	const cmd = 'grep -n "ℹ" out.log\ngit commit -m "feat: x ✨"';
+	assert.equal(
+		scrubCommand(cmd),
+		'grep -n "ℹ" out.log\ngit commit -m "feat: x"',
+	);
+});
+
 test("is idempotent", () => {
 	const once = scrubCommand(
 		heredocCommit(`✨ feat: x — y\n\n${FOOTER}\n\n${TRAILER}`),

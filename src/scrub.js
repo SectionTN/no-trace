@@ -133,7 +133,7 @@ function processLines(lines, style, shell) {
 			popBlank(out, 0);
 			if (tail) out.push(tail);
 		} else {
-			out.push(style ? styleLine(line, true) : line);
+			out.push(style && isGitCommand(line) ? styleLine(line, true) : line);
 		}
 		if (pending.length) {
 			term = pending.shift();
