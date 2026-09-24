@@ -11,14 +11,20 @@ Claude Code appends `Co-Authored-By: Claude <noreply@anthropic.com>` to commits 
 the punctuation habits that give generated text away, from every `git`, `gh` and `glab`
 command and every GitHub MCP call the assistant makes.
 
-## Why not just the setting
+## Why a hook and not a rule
+
+Telling Claude in `CLAUDE.md` or a rules file not to add attribution works until it does
+not. A long session or a compaction later, the rule has slipped out of context, the trailer
+lands in the commit, you point it out, and you get "You're absolutely right!" plus a commit
+to amend. A hook does not forget. It runs on every command whether or not the rule survived,
+and it fixes the ones that got through.
 
 Claude Code's `attribution` setting can blank its own commit trailer and pull request
-footer. If that is all you want, set it and stop here. no-trace is for the rest: trailers
-from Copilot, Cursor, Codex, Jules or Devin when more than one assistant touches a repo,
-the emoji, em dashes and curly quotes that mark generated prose, message files and GitHub
-MCP calls the setting never sees, and a repair step for whatever still lands in a commit or
-a pull request. It also holds on a new machine or project where the setting is missing.
+footer, and that part is reliable. no-trace is for the rest: trailers from Copilot, Cursor,
+Codex, Jules or Devin when more than one assistant touches a repo, the emoji, em dashes and
+curly quotes that mark generated prose, message files and GitHub MCP calls the setting never
+sees, and a repair step for whatever still lands in a commit or a pull request. It also
+holds on a new machine or project where neither the rule nor the setting made it over.
 
 ## How it works
 
